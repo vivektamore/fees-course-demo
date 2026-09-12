@@ -7,7 +7,7 @@ type LoginMode = "mobile" | "email" | "userid";
 
 // Demo credentials — replace with real API calls
 const DEMO_OTP = "123456";
-const DEMO_CREDENTIALS: Record<string, string> = { admin: "admin123", vivek: "fees@123" };
+const DEMO_CREDENTIALS: Record<string, string> = { admin: "admin123", vivek: "fees@123", esha: "esha@123" };
 
 function generateCaptcha(length = 6): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -192,7 +192,7 @@ export default function LoginPage() {
               <button id="send-otp-btn" type="submit" className="submit-btn" disabled={loading}>
                 {loading ? <span className="spinner" /> : loginMode === "userid" ? "Login" : "Send OTP"}
               </button>
-              {loginMode === "userid" && <p className="demo-hint">🔑 Demo: ID <strong>admin</strong> / Pass <strong>admin123</strong></p>}
+              {loginMode === "userid" && <p className="demo-hint">🔑 Demo: ID <strong>Esha</strong> / Pass <strong>esha@123</strong></p>}
               {loginMode !== "userid" && <p className="demo-hint">📱 Demo OTP: <strong>123456</strong></p>}
               <p className="login-footer-text">Trouble logging in? <a href="#" className="footer-link">Contact Support</a></p>
             </form>

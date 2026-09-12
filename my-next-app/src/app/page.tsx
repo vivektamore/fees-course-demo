@@ -43,12 +43,32 @@ export default function FeePayrPage() {
     }
   }, [router]);
 
+  // Auto-countdown on success screen
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (currentView === "success" && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [currentView, countdown]);
+
   const handleLogout = () => {
     localStorage.removeItem("feepayr_auth");
     router.replace("/login");
   };
 
-  // Show loading spinner while checking auth
+  const handlePayNow = () => {
+    setIsProcessingPayment(true);
+    setTimeout(() => {
+      setIsProcessingPayment(false);
+      setCurrentView("success");
+      setCountdown(3);
+    }, 900);
+  };
+
+  // Show loading spinner while checking auth — AFTER all hooks
   if (isAuthenticated === null) {
     return (
       <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#0f172a"}}>
@@ -61,25 +81,6 @@ export default function FeePayrPage() {
     );
   }
 
-  // Auto-countdown on success screen
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (currentView === "success" && countdown > 0) {
-      timer = setTimeout(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearTimeout(timer);
-  }, [currentView, countdown]);
-
-  const handlePayNow = () => {
-    setIsProcessingPayment(true);
-    setTimeout(() => {
-      setIsProcessingPayment(false);
-      setCurrentView("success");
-      setCountdown(3);
-    }, 900);
-  };
 
   const handleReturnHome = () => {
     setCurrentView("pending");
