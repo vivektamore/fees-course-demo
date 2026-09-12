@@ -17,8 +17,6 @@ import {
   ArrowDown,
   Download,
   Printer,
-  Smartphone,
-  Monitor,
   CheckCircle2,
   HelpCircle,
 } from "lucide-react";
@@ -26,7 +24,6 @@ import {
 export default function FeePayrPage() {
   // State for toggling between Image 1 (Pending Payment) and Image 2 (Payment Success)
   const [currentView, setCurrentView] = useState<"pending" | "success">("pending");
-  const [viewMode, setViewMode] = useState<"mobile" | "responsive">("mobile");
   const [feeSelected, setFeeSelected] = useState<boolean>(true);
   const [showFeeBreakdown, setShowFeeBreakdown] = useState<boolean>(false);
   const [showReceiptModal, setShowReceiptModal] = useState<boolean>(false);
@@ -60,109 +57,36 @@ export default function FeePayrPage() {
 
   return (
     <div className="min-h-screen bg-slate-200 flex flex-col items-center py-4 px-2 sm:px-4 font-sans antialiased text-slate-800">
-      {/* Top Demo Bar / Controls */}
-      <div className="w-full max-w-md bg-white border border-slate-300 rounded-xl shadow-xs p-3 mb-4 flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
-          <span>Views:</span>
-          <button
-            onClick={() => setCurrentView("pending")}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-              currentView === "pending"
-                ? "bg-emerald-700 text-white shadow-xs"
-                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-            }`}
-          >
-            Image 1 (Pending)
-          </button>
-          <button
-            onClick={() => {
-              setCurrentView("success");
-              setCountdown(3);
-            }}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-              currentView === "success"
-                ? "bg-emerald-700 text-white shadow-xs"
-                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-            }`}
-          >
-            Image 2 (Success)
-          </button>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setViewMode("mobile")}
-            className={`p-1.5 rounded-md transition-colors ${
-              viewMode === "mobile" ? "bg-slate-800 text-white" : "text-slate-600 hover:bg-slate-100"
-            }`}
-            title="Mobile phone frame"
-          >
-            <Smartphone className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setViewMode("responsive")}
-            className={`p-1.5 rounded-md transition-colors ${
-              viewMode === "responsive" ? "bg-slate-800 text-white" : "text-slate-600 hover:bg-slate-100"
-            }`}
-            title="Full responsive view"
-          >
-            <Monitor className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Top Demo Bar / View Switcher */}
+      <div className="w-full max-w-2xl bg-white border border-slate-300 rounded-xl shadow-xs p-3 mb-4 flex items-center gap-2 flex-wrap">
+        <span className="text-xs font-semibold text-slate-700">Views:</span>
+        <button
+          onClick={() => setCurrentView("pending")}
+          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+            currentView === "pending"
+              ? "bg-emerald-700 text-white shadow-xs"
+              : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+          }`}
+        >
+          Image 1 (Pending)
+        </button>
+        <button
+          onClick={() => {
+            setCurrentView("success");
+            setCountdown(3);
+          }}
+          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+            currentView === "success"
+              ? "bg-emerald-700 text-white shadow-xs"
+              : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+          }`}
+        >
+          Image 2 (Success)
+        </button>
       </div>
 
-      {/* Main Container - Mobile Frame or Responsive */}
-      <div
-        className={`w-full bg-[#f8faf8] shadow-2xl overflow-hidden transition-all duration-300 ${
-          viewMode === "mobile"
-            ? "max-w-[430px] rounded-[36px] border-[6px] border-slate-900 ring-1 ring-slate-400"
-            : "max-w-2xl rounded-2xl border border-slate-300"
-        }`}
-      >
-        {/* Mobile Phone Status Bar (Exact replica of Android/iOS bar in screenshot) */}
-        {viewMode === "mobile" && (
-          <div className="bg-white px-5 pt-3 pb-1 flex items-center justify-between text-xs font-medium text-slate-800 select-none">
-            <span className="font-semibold text-[13px] tracking-tight">13:06</span>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold tracking-wider text-slate-600">5G</span>
-              {/* Signal bars */}
-              <div className="flex items-end gap-[1.5px] h-3">
-                <div className="w-[2.5px] h-1.5 bg-slate-800 rounded-[0.5px]"></div>
-                <div className="w-[2.5px] h-2 bg-slate-800 rounded-[0.5px]"></div>
-                <div className="w-[2.5px] h-2.5 bg-slate-800 rounded-[0.5px]"></div>
-                <div className="w-[2.5px] h-3 bg-slate-800 rounded-[0.5px]"></div>
-              </div>
-              {/* Battery */}
-              <div className="flex items-center gap-1">
-                <span className="text-[11px] font-semibold text-slate-700">42%</span>
-                <div className="w-5 h-2.5 border border-slate-800 rounded-[3px] p-[1px] flex items-center">
-                  <div className="w-2.5 h-full bg-slate-800 rounded-[1px]"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Browser Bar (feepayr.com / Online Fee c...) */}
-        <div className="bg-white px-4 py-2 border-b border-slate-200 flex items-center justify-between gap-3 text-slate-700 select-none">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <button className="text-slate-600 hover:text-slate-900" title="Close">
-              <X className="w-5 h-5" />
-            </button>
-            <ChevronDown className="w-5 h-5 text-slate-500" />
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold text-slate-800 truncate">
-                Online Fee c...
-              </span>
-              <span className="text-[11px] text-slate-500 truncate">feepayr.com</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 text-slate-600">
-            <Share2 className="w-4 h-4 cursor-pointer hover:text-slate-900" />
-            <Bookmark className="w-4 h-4 cursor-pointer hover:text-slate-900" />
-            <MoreVertical className="w-4 h-4 cursor-pointer hover:text-slate-900" />
-          </div>
-        </div>
+      {/* Main Responsive Container */}
+      <div className="w-full max-w-2xl bg-[#f8faf8] shadow-2xl overflow-hidden rounded-2xl border border-slate-300">
 
         {/* Top Green Brand Navigation Bar */}
         <header className="bg-[#4d836e] text-white px-4 py-2.5 flex items-center justify-between shadow-xs">
@@ -289,8 +213,8 @@ export default function FeePayrPage() {
         </header>
 
         {/* Content Body */}
-        <div className="p-4 space-y-4">
-          {/* Quick Navigation 3-Card Grid (as in Image 2) */}
+        <div className="p-4 sm:p-6 space-y-4">
+          {/* Quick Navigation 3-Card Grid */}
           <div className="grid grid-cols-3 gap-3">
             {/* Make Payment */}
             <button
@@ -340,7 +264,7 @@ export default function FeePayrPage() {
             </button>
           </div>
 
-          {/* VIEW 1: PENDING PAYMENTS (Exact Match to Image 1) */}
+          {/* VIEW 1: PENDING PAYMENTS */}
           {currentView === "pending" && (
             <div className="space-y-4 animate-in fade-in duration-200">
               {/* Student Details Card */}
@@ -487,7 +411,7 @@ export default function FeePayrPage() {
             </div>
           )}
 
-          {/* VIEW 2: PAYMENT SUCCESS (Exact Match to Image 2) */}
+          {/* VIEW 2: PAYMENT SUCCESS */}
           {currentView === "success" && (
             <div className="space-y-6 pt-2 animate-in fade-in duration-200">
               {/* Payment Success Card */}
