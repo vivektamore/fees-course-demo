@@ -1,8 +1,13 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 type LoginMode = "mobile" | "email" | "userid";
+
+// Demo credentials — replace with real API calls
+const DEMO_OTP = "123456";
+const DEMO_CREDENTIALS: Record<string, string> = { admin: "admin123", vivek: "fees@123" };
 
 function generateCaptcha(length = 6): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -12,6 +17,7 @@ function generateCaptcha(length = 6): string {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
   const [instituteType, setInstituteType] = useState("College");
   const [loginMode, setLoginMode] = useState<LoginMode>("mobile");
   const [mobile, setMobile] = useState("");
@@ -21,8 +27,10 @@ export default function LoginPage() {
   const [captchaCode, setCaptchaCode] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaError, setCaptchaError] = useState("");
+  const [credError, setCredError] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otpError, setOtpError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [sideTab, setSideTab] = useState<"demo" | "request" | null>(null);
@@ -30,11 +38,16 @@ export default function LoginPage() {
 
   useEffect(() => { setCaptchaCode(generateCaptcha()); }, []);
 
-  const refreshCaptcha = () => { setCaptchaCode(generateCaptcha()); setCaptchaInput(""); setCaptchaError(""); };
+  const refreshCaptcha = () => {
+    setCaptchaCode(generateCaptcha());
+    setCaptchaInput("");
+    setCaptchaError("");
+  };
 
   const handleOtpChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return;
     const newOtp = [...otp]; newOtp[index] = value; setOtp(newOtp);
+    setOtpError("");
     if (value && index < 5) otpRefs.current[index + 1]?.focus();
   };
 
@@ -42,14 +55,63 @@ export default function LoginPage() {
     if (e.key === "Backspace" && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus();
   };
 
+  // Validate CAPTCHA strictly for all modes
+  const validateCaptcha = (): boolean => {
+    if (captchaInput.trim().toUpperCase() !== captchaCode) {
+      setCaptchaError("❌ Invalid CAPTCHA. Please try again.");
+      refreshCaptcha();
+      return false;
+    }
+    setCaptchaError("");
+    return true;
+  };
+
+  // Handle OTP send (mobile/email)
   const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (captchaInput.toUpperCase() !== captchaCode) { setCaptchaError("Invalid CAPTCHA. Please try again."); refreshCaptcha(); return; }
-    setCaptchaError(""); setLoading(true);
+    if (!validateCaptcha()) return;
+    setLoading(true);
     setTimeout(() => { setLoading(false); setOtpSent(true); }, 1500);
   };
 
-  const handleLogin = (e: React.FormEvent) => { e.preventDefault(); setLoading(true); setTimeout(() => setLoading(false), 1500); };
+  // Handle UserID/Password login
+  const handleUserIdLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCredError("");
+    if (!validateCaptcha()) return;
+    // Validate credentials
+    const expectedPassword = DEMO_CREDENTIALS[userId.trim().toLowerCase()];
+    if (!expectedPassword || expectedPassword !== password) {
+      setCredError("❌ Invalid User ID or Password. Please try again.");
+      refreshCaptcha();
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      localStorage.setItem("feepayr_auth", JSON.stringify({ userId, loginMode, instituteType, loggedAt: Date.now() }));
+      router.push("/");
+    }, 1500);
+  };
+
+  // Handle OTP verification
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    setOtpError("");
+    const enteredOtp = otp.join("");
+    if (enteredOtp !== DEMO_OTP) {
+      setOtpError("❌ Invalid OTP. Please try again. (Demo OTP: 123456)");
+      setOtp(["", "", "", "", "", ""]);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      localStorage.setItem("feepayr_auth", JSON.stringify({ mobile, email, loginMode, instituteType, loggedAt: Date.now() }));
+      router.push("/");
+    }, 1500);
+  };
 
   return (
     <div className="login-root">
@@ -73,7 +135,7 @@ export default function LoginPage() {
 
         <div className="login-card">
           {!otpSent ? (
-            <form onSubmit={handleSendOtp} className="login-form">
+            <form onSubmit={loginMode === "userid" ? handleUserIdLogin : handleSendOtp} className="login-form">
               <div className="form-group">
                 <label className="form-label">Institute Type</label>
                 <div className="select-wrapper">
@@ -87,7 +149,7 @@ export default function LoginPage() {
               <div className="radio-group">
                 {(["mobile","email","userid"] as LoginMode[]).map(mode => (
                   <label key={mode} className="radio-label">
-                    <input type="radio" name="loginMode" value={mode} checked={loginMode === mode} onChange={() => { setLoginMode(mode); setOtpSent(false); }} className="radio-input" id={`mode-${mode}`} />
+                    <input type="radio" name="loginMode" value={mode} checked={loginMode === mode} onChange={() => { setLoginMode(mode); setOtpSent(false); setCredError(""); setCaptchaError(""); refreshCaptcha(); }} className="radio-input" id={`mode-${mode}`} />
                     <span className="radio-dot" />
                     <span className="radio-text">{mode === "mobile" ? "Mobile" : mode === "email" ? "Email" : "UserID/Password"}</span>
                   </label>
@@ -107,35 +169,35 @@ export default function LoginPage() {
               {loginMode === "userid" && (
                 <>
                   <div className="form-group">
-                    <input id="userid-input" type="text" placeholder="Enter User ID" value={userId} onChange={e => setUserId(e.target.value)} className="form-input" required />
+                    <input id="userid-input" type="text" placeholder="Enter User ID" value={userId} onChange={e => { setUserId(e.target.value); setCredError(""); }} className="form-input" required />
                   </div>
                   <div className="form-group password-group">
-                    <input id="password-input" type={showPass ? "text" : "password"} placeholder="Enter Password" value={password} onChange={e => setPassword(e.target.value)} className="form-input" required />
+                    <input id="password-input" type={showPass ? "text" : "password"} placeholder="Enter Password" value={password} onChange={e => { setPassword(e.target.value); setCredError(""); }} className="form-input" required />
                     <button type="button" className="show-pass-btn" onClick={() => setShowPass(!showPass)}>{showPass ? "🙈" : "👁️"}</button>
                   </div>
+                  {credError && <p className="error-msg">{credError}</p>}
                 </>
               )}
 
-              {loginMode !== "userid" && (
-                <>
-                  <div className="captcha-display">
-                    <span className="captcha-code">{captchaCode}</span>
-                    <button type="button" className="captcha-refresh" onClick={refreshCaptcha} title="Refresh CAPTCHA">↻</button>
-                  </div>
-                  <div className="form-group">
-                    <input id="captcha-input" type="text" placeholder="ENTER CAPTCHA CODE" value={captchaInput} onChange={e => { setCaptchaInput(e.target.value); setCaptchaError(""); }} className={`form-input captcha-input${captchaError ? " input-error" : ""}`} required />
-                    {captchaError && <p className="error-msg">{captchaError}</p>}
-                  </div>
-                </>
-              )}
+              {/* CAPTCHA shown for ALL login modes */}
+              <div className="captcha-display">
+                <span className="captcha-code">{captchaCode}</span>
+                <button type="button" className="captcha-refresh" onClick={refreshCaptcha} title="Refresh CAPTCHA">↻</button>
+              </div>
+              <div className="form-group">
+                <input id="captcha-input" type="text" placeholder="ENTER CAPTCHA CODE" value={captchaInput} onChange={e => { setCaptchaInput(e.target.value); setCaptchaError(""); }} className={`form-input captcha-input${captchaError ? " input-error" : ""}`} required />
+                {captchaError && <p className="error-msg">{captchaError}</p>}
+              </div>
 
               <button id="send-otp-btn" type="submit" className="submit-btn" disabled={loading}>
                 {loading ? <span className="spinner" /> : loginMode === "userid" ? "Login" : "Send OTP"}
               </button>
+              {loginMode === "userid" && <p className="demo-hint">🔑 Demo: ID <strong>admin</strong> / Pass <strong>admin123</strong></p>}
+              {loginMode !== "userid" && <p className="demo-hint">📱 Demo OTP: <strong>123456</strong></p>}
               <p className="login-footer-text">Trouble logging in? <a href="#" className="footer-link">Contact Support</a></p>
             </form>
           ) : (
-            <form onSubmit={handleLogin} className="login-form">
+            <form onSubmit={handleVerifyOtp} className="login-form">
               <div className="otp-header">
                 <div className="otp-icon">📱</div>
                 <h2 className="otp-title">OTP Verification</h2>
@@ -143,15 +205,16 @@ export default function LoginPage() {
               </div>
               <div className="otp-inputs">
                 {otp.map((digit, i) => (
-                  <input key={i} id={`otp-${i}`} type="text" maxLength={1} value={digit} onChange={e => handleOtpChange(i, e.target.value)} onKeyDown={e => handleOtpKeyDown(i, e)} ref={el => { otpRefs.current[i] = el; }} className="otp-box" inputMode="numeric" />
+                  <input key={i} id={`otp-${i}`} type="text" maxLength={1} value={digit} onChange={e => handleOtpChange(i, e.target.value)} onKeyDown={e => handleOtpKeyDown(i, e)} ref={el => { otpRefs.current[i] = el; }} className={`otp-box${otpError ? " otp-box-error" : ""}`} inputMode="numeric" />
                 ))}
               </div>
+              {otpError && <p className="error-msg" style={{textAlign:"center"}}>{otpError}</p>}
               <button id="verify-otp-btn" type="submit" className="submit-btn" disabled={loading || otp.join("").length < 6}>
                 {loading ? <span className="spinner" /> : "Verify & Login"}
               </button>
               <div className="resend-row">
                 <span className="resend-text">Did not receive OTP?</span>
-                <button type="button" className="resend-btn" onClick={() => { setOtpSent(false); refreshCaptcha(); setOtp(["","","","","",""]); }}>Resend OTP</button>
+                <button type="button" className="resend-btn" onClick={() => { setOtpSent(false); refreshCaptcha(); setOtp(["","","","","",""]); setOtpError(""); }}>Resend OTP</button>
               </div>
             </form>
           )}
@@ -230,6 +293,10 @@ export default function LoginPage() {
         @keyframes spin{to{transform:rotate(360deg);}}
         .login-footer-text{color:rgba(255,255,255,0.7);font-size:0.8rem;text-align:center;}
         .footer-link{color:#4ade80;text-decoration:none;font-weight:600;}
+        .demo-hint{color:rgba(255,255,255,0.6);font-size:0.78rem;text-align:center;margin:0;background:rgba(255,255,255,0.08);padding:8px 12px;border-radius:8px;border:1px dashed rgba(255,255,255,0.2);}
+        .demo-hint strong{color:#fbbf24;}
+        .otp-box-error{border-color:#ef4444!important;animation:shake 0.3s ease;}
+        @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
         .footer-link:hover{text-decoration:underline;}
         .otp-header{text-align:center;}
         .otp-icon{font-size:2.5rem;margin-bottom:8px;}

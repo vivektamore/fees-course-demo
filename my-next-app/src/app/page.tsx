@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Home,
   Power,
@@ -22,6 +23,8 @@ import {
 } from "lucide-react";
 
 export default function FeePayrPage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   // State for toggling between Image 1 (Pending Payment) and Image 2 (Payment Success)
   const [currentView, setCurrentView] = useState<"pending" | "success">("pending");
   const [feeSelected, setFeeSelected] = useState<boolean>(true);
@@ -29,6 +32,34 @@ export default function FeePayrPage() {
   const [showReceiptModal, setShowReceiptModal] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(3);
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
+
+  // Auth guard — check login on mount
+  useEffect(() => {
+    const auth = localStorage.getItem("feepayr_auth");
+    if (!auth) {
+      router.replace("/login");
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("feepayr_auth");
+    router.replace("/login");
+  };
+
+  // Show loading spinner while checking auth
+  if (isAuthenticated === null) {
+    return (
+      <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#0f172a"}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{width:"48px",height:"48px",border:"4px solid rgba(255,255,255,0.2)",borderTopColor:"#22c55e",borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto"}} />
+          <p style={{color:"rgba(255,255,255,0.6)",marginTop:"16px",fontSize:"0.9rem"}}>Loading...</p>
+          <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
+        </div>
+      </div>
+    );
+  }
 
   // Auto-countdown on success screen
   useEffect(() => {
