@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Home,
@@ -88,90 +89,24 @@ export default function FeePayrPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-200 flex flex-col items-center py-4 px-2 sm:px-4 font-sans antialiased text-slate-800">
-      {/* Top Demo Bar / View Switcher */}
-      <div className="w-full max-w-2xl bg-white border border-slate-300 rounded-xl shadow-xs p-3 mb-4 flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-semibold text-slate-700">Views:</span>
-        <button
-          onClick={() => setCurrentView("pending")}
-          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-            currentView === "pending"
-              ? "bg-emerald-700 text-white shadow-xs"
-              : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-          }`}
-        >
-          Image 1 (Pending)
-        </button>
-        <button
-          onClick={() => {
-            setCurrentView("success");
-            setCountdown(3);
-          }}
-          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-            currentView === "success"
-              ? "bg-emerald-700 text-white shadow-xs"
-              : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-          }`}
-        >
-          Image 2 (Success)
-        </button>
-      </div>
+    <div className="min-h-screen bg-[#f8faf8] flex flex-col font-sans antialiased text-slate-800">
 
       {/* Main Responsive Container */}
-      <div className="w-full max-w-2xl bg-[#f8faf8] shadow-2xl overflow-hidden rounded-2xl border border-slate-300">
+      <div className="w-full flex-1 flex flex-col">
 
         {/* Top Green Brand Navigation Bar */}
         <header className="bg-[#4d836e] text-white px-4 py-2.5 flex items-center justify-between shadow-xs">
-          {/* Left: NAAC 'A' Grade College Emblem */}
+          {/* Left: College Logo */}
           <div className="flex items-center gap-2">
-            <div className="w-12 h-12 bg-white rounded-full p-0.5 shadow-sm flex items-center justify-center overflow-hidden border border-amber-300">
-              <svg viewBox="0 0 100 100" className="w-full h-full">
-                {/* Wreath / Outer Circle */}
-                <circle cx="50" cy="50" r="46" fill="#fff9e6" stroke="#b45309" strokeWidth="2" />
-                {/* Laurel wreath garland */}
-                <path
-                  d="M50 10 C 20 20 12 60 40 86 C 26 62 26 30 50 18"
-                  fill="#d97706"
-                  opacity="0.8"
-                />
-                <path
-                  d="M50 10 C 80 20 88 60 60 86 C 74 62 74 30 50 18"
-                  fill="#d97706"
-                  opacity="0.8"
-                />
-                {/* Inner emblem */}
-                <circle cx="50" cy="50" r="30" fill="#fef08a" stroke="#b45309" strokeWidth="1.5" />
-                {/* Sunrays */}
-                <g stroke="#f59e0b" strokeWidth="1.5">
-                  <line x1="50" y1="24" x2="50" y2="30" />
-                  <line x1="50" y1="70" x2="50" y2="76" />
-                  <line x1="24" y1="50" x2="30" y2="50" />
-                  <line x1="70" y1="50" x2="76" y2="50" />
-                </g>
-                {/* Book & Lamp */}
-                <path
-                  d="M36 56 Q 50 50 64 56 Q 50 62 36 56 Z"
-                  fill="#b91c1c"
-                  stroke="#7f1d1d"
-                  strokeWidth="1"
-                />
-                <path
-                  d="M45 44 C 45 40 55 40 55 44 C 55 48 45 48 45 44 Z"
-                  fill="#ef4444"
-                />
-                <circle cx="50" cy="38" r="3.5" fill="#eab308" />
-                {/* NAAC banner text arc */}
-                <text
-                  x="50"
-                  y="92"
-                  fontSize="7"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                  fill="#991b1b"
-                >
-                  NAAC &apos;A&apos; GRADE
-                </text>
-              </svg>
+            <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-300 shadow-md bg-white flex items-center justify-center">
+              <Image
+                src="/logo.jpg"
+                alt="College Logo - NAAC Re-Accredited A Grade"
+                width={56}
+                height={56}
+                className="object-cover w-full h-full"
+                priority
+              />
             </div>
           </div>
 
